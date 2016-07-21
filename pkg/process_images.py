@@ -6,7 +6,7 @@
  *  process_images.py
  *
  *  Created by Shari Matzner on 11/14/2015.
- *  Copyright 2015 Pacific Northwest National Laboratory. All rights reserved.
+ *  Copyright © 2016, Battelle Memorial Institute.  All rights reserved.
  *
 """
 
