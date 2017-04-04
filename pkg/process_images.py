@@ -1,5 +1,5 @@
 #!/usr/bin/python
-
+# -*- coding: utf-8 -*-
 """
  *  Remote Sensing for Damage Assessment
  *
@@ -9,12 +9,11 @@
  *  Copyright © 2016, Battelle Memorial Institute.  All rights reserved.
  *
 """
-
-
-import glob
-import time
-import shutil
-import os
+import sys, getopt  # command line args
+import glob         # file name pattern matching
+import time         # get time for output dir name
+import shutil       # copy files
+import os           # file paths
 import numpy as np
 import cv2 # openCV
 import rubble_detection_talbot as rub
@@ -57,35 +56,35 @@ def write_image(im,outfilename) :
     print("Writing " + outfilename)
     cv2.imwrite(outfilename, imout);
 
-# Process all the images in dirpath using func.
-#-------------------------------------------------
-# Entire Ike data set.
-#dirpath = 'Data/HurricaneIke/NOAA_Rapid-Response/FullRes/sep14C30' # 85 ?
-#dirpath = 'Data/HurricaneIke/NOAA_Rapid-Response/FullRes/sep14C31' # 73 2015-07-07_133355_out
-#dirpath = 'Data/HurricaneIke/NOAA_Rapid-Response/FullRes/sep14C32' # 47 2015-07-07_210438_out
-#dirpath = 'Data/HurricaneIke/NOAA_Rapid-Response/FullRes/sep14C33' # 48 2015-08-03_154222_out
-#dirpath = 'Data/HurricaneIke/NOAA_Rapid-Response/FullRes/sep14C34' # 10 2015-08-05_131136_out
-#dirpath = 'Data/HurricaneIke/NOAA_Rapid-Response/FullRes/sep14C35' # 10 2015-08-06_094130_out
-#dirpath = 'Data/HurricaneIke/NOAA_Rapid-Response/FullRes/sep14C36' # 8 2015-08-06_123901_out
-#dirpath = 'Data/HurricaneIke/NOAA_Rapid-Response/FullRes/sep14C37' # 3 2015-08-10_104350_out 
-#dirpath = 'Data/HurricaneIke/NOAA_Rapid-Response/FullRes/sep14C1' # 13 2015-08-10_124715_out
-#dirpath = 'Data/HurricaneIke/NOAA_Rapid-Response/FullRes/sep14C2' # 43 2015-08-10_165708_out
-#dirpath = 'Data/HurricaneIke/NOAA_Rapid-Response/FullRes/sep16C2' # 104 2015-08-12_140021_out
-#dirpath = 'Data/HurricaneIke/NOAA_Rapid-Response/FullRes/sep16C3' # 364
-#dirpath = 'Data/HurricaneIke/NOAA_Rapid-Response/FullRes/sep16C30' # 85 2015-08-20_120043_out
-#dirpath = 'Data/HurricaneIke/NOAA_Rapid-Response/FullRes/sep16C31' # 73 2015-08-21_132242_out 
-#dirpath = 'Data/HurricaneIke/NOAA_Rapid-Response/FullRes/sep16C32' # 47 2015-08-24_094147_out
-#dirpath = 'Data/HurricaneIke/NOAA_Rapid-Response/FullRes/sep16C33' # 48 2015-08-25_140607_out
-#dirpath = 'Data/HurricaneIke/NOAA_Rapid-Response/FullRes/sep16C34' # 26 2015-08-27_080024_out
-#dirpath = 'Data/HurricaneIke/NOAA_Rapid-Response/FullRes/sep16C35' # 18 2015-08-27_152604_out
-#dirpath = 'Data/HurricaneIke/NOAA_Rapid-Response/FullRes/sep16C36' # 18 2015-08-28_082644_out
-#dirpath = 'Data/HurricaneIke/NOAA_Rapid-Response/FullRes/sep16C37' # 16 2015-08-28_143335_out
-#dirpath = 'Data/HurricaneIke/NOAA_Rapid-Response/FullRes/sep16C38' # 16 2015-08-31_071956_out
-#dirpath = 'Data/HurricaneIke/NOAA_Rapid-Response/FullRes/sep16C39' # 17 2015-08-31_123445_out
-#dirpath = 'Data/HurricaneIke/NOAA_Rapid-Response/FullRes/sep16C4' # 269 2015-09-02_153423_out
-#dirpath = 'Data/HurricaneIke/NOAA_Rapid-Response/FullRes/sep16C5' # 61 2015-08-14_101103_out
-dirpath = 'tempdir/'
-imfile_ext = '.JPG'
+def main(argv):
+    # runtime options
+    dirpath = '.'
+    imfile_ext = '.jpg'
+    outpath = ''
+    numbins = 9 # number of oriented gradient histogram bins
+    W = 6      # window size for entropy calculation
+    gradthresh = 0.5 # magnitude of gradient must be greater than this
+    WRITE_FILES = False;
+
+    usage = "\nprocess_images.py -i [input directory] -e [image file extension] -o [output directory]\n"
+    try:
+        opts, args = getopt.getopt(argv,"hi:e:o:")
+    except getopt.GetoptError:
+        print usage
+        sys.exit(2)
+    for opt, arg in opts:
+        if opt == '-h':
+            print usage
+            sys.exit()
+        elif opt == '-i':
+            dirpath = arg
+        elif opt == '-e':
+            imfile_ext = arg
+            if not imfile_ext[0] == '.':
+                imfile_ext = '.' + imfile_ext
+        elif opt == '-o':
+            outpath = arg
+
 # Ike test
 #dirpath = 'Data/HurricaneIke/NOAA_Rapid-Response/Test/' 
 #imfile_ext = '.JPG'
@@ -100,85 +99,87 @@ imfile_ext = '.JPG'
 # .met -- text file of metadata in Federal Geographic Data Commitee (FGDC) standard format
 # .xml -- text file of metadata in xml formats
 #-------------------------------------------------
-# Get list of image files in dir and subdirs.
-print("Getting list of image files " + dirpath + "*" + imfile_ext)
-imfilelist = glob.glob(dirpath + '*' + imfile_ext)
-if not len(imfilelist) > 0:
-    print("No image files found.") 
+    # Get list of image files in dir and subdirs.
+    dirfilestr = os.path.join(dirpath,'*' + imfile_ext)
+    print "Getting list of image files ", dirfilestr
+    imfilelist = glob.glob(dirfilestr)
+    if not len(imfilelist) > 0:
+        print("No image files found.") 
+        sys.exit(2)
 
-# Create output dir.
-outpath = time.strftime("%Y-%m-%d_%H%M%S") + '_out/'
-print("Creating output directory " + outpath)
-os.makedirs(outpath)
-copy_worldfiles(dirpath,outpath)
-outfile_ext = '.png'
-WRITE_FILES = False;
+    # Create output dir.
+    if outpath == '':
+        outpath = time.strftime("%Y-%m-%d_%H%M%S") + '_out/'
+    print("Creating output directory " + outpath)
+    os.makedirs(outpath)
+    copy_worldfiles(dirpath,outpath)
+    #outfile_ext = '.png'
 
-numbins = 9 # number of oriented gradient histogram bins
-W = 6      # window size for entropy calculation
-gradthresh = 0.5 # magnitude of gradient must be greater than this
+    # Process each file.
+    for f in imfilelist:
+        print(f)
+        # test smaller region
+        #roi = [4436, 2000, 800, 800] # [x,y,width,height]
+        #imtest = getgray(f,roi)
+        imtest = getgray(f)
+        outfilename = outpath + os.path.splitext(os.path.basename(f))[0] + outfile_ext
+        write_image(imtest, outfilename)
+        #
+        # Get gradient image.
+        # Gradient is positive magnitude and angle in [0 360] degrees.
+        (mag, psi) = rub.gradients(imtest)
+        # Map gradient angle to [0 180]
+        psi[psi>180] -= 180
+        outfilename = outpath + os.path.splitext(os.path.basename(f))[0] + "-mag" + outfile_ext
+        if WRITE_FILES: write_image(mag, outfilename)
+        outfilename = outpath + os.path.splitext(os.path.basename(f))[0] + "-psi" + outfile_ext
+        if WRITE_FILES: write_image(psi, outfilename)
+        #
+        # My innovation.  Make gradients with mag < thresh = "no gradient", because in those
+        # cases, the angle is just noise.
+        psi[mag<gradthresh] = -1.0 # no gradient
+        outfilename = outpath + os.path.splitext(os.path.basename(f))[0] + "-mag" + '{0:03d}'.format(int(gradthresh*100)) + outfile_ext
+        if WRITE_FILES: write_image(mag>=gradthresh, outfilename)
+        outfilename = outpath + os.path.splitext(os.path.basename(f))[0] + "-psi" + '{0:03d}'.format(int(gradthresh*100)) + outfile_ext
+        if WRITE_FILES: write_image(psi, outfilename)
+        #
+        # Generate integral histogram.
+        #histpsi = np.histogram(psi,numbins,(0,180),new=True) # hist of psi for checking results
+        print("Histogram of gradient angles: ")
+        histpsi = np.histogram(psi,numbins,(0,180)) # hist of psi for checking results
+        print(histpsi[0])
+        print("Total gradient pixels: " + str(sum(histpsi[0])) + " out of " + str(imtest.size))
+        int_bins = rub.integral_hist(psi,histpsi[1]) # integral historgram
+        #
+        # Calculate entropy image.
+        print("Calculating entropy...")
+        (H,S) = rub.entropy(int_bins,W)
+        outfilename = outpath + os.path.splitext(os.path.basename(f))[0] + "-H" + str(W)+ outfile_ext
+        if WRITE_FILES: write_image(H, outfilename)
+        print("Histogram of entropy: ")
+        histH = np.histogram(H,8)
+        print(histH[0])
+        print(histH[1])
+        #
+        # Output rubble detections.
+        print("Saving output...")
+        imrbl = np.zeros(imtest.shape,dtype=np.uint8)
+        imrbl[H>histH[1][5]] = 255
+        outfilename = outpath + os.path.splitext(os.path.basename(f))[0] + "-rbl" + str(W)+ '.jpg'
+        params = list() # opencv params for jpeg
+        params.append(cv2.IMWRITE_JPEG_QUALITY)
+        params.append(100) # use 100% for lossless compression
+        cv2.imwrite(outfilename, imrbl,params)
+        # Copy the worldfile from original image.
+        wrld1 = outpath + os.path.splitext(os.path.basename(f))[0] + '.jgw'
+        wrld2 = outpath + os.path.splitext(os.path.basename(f))[0] + "-rbl" + str(W)+ '.jgw'
+        shutil.copyfile(wrld1,wrld2)
+        print("------------------")
+        print("  ")
 
-# Process each file.
-for f in imfilelist:
-    print(f)
-    # test smaller region
-    #roi = [4436, 2000, 800, 800] # [x,y,width,height]
-    #imtest = getgray(f,roi)
-    imtest = getgray(f)
-    outfilename = outpath + os.path.splitext(os.path.basename(f))[0] + outfile_ext
-    write_image(imtest, outfilename)
-    #
-    # Get gradient image.
-    # Gradient is positive magnitude and angle in [0 360] degrees.
-    (mag, psi) = rub.gradients(imtest)
-    # Map gradient angle to [0 180]
-    psi[psi>180] -= 180
-    outfilename = outpath + os.path.splitext(os.path.basename(f))[0] + "-mag" + outfile_ext
-    if WRITE_FILES: write_image(mag, outfilename)
-    outfilename = outpath + os.path.splitext(os.path.basename(f))[0] + "-psi" + outfile_ext
-    if WRITE_FILES: write_image(psi, outfilename)
-    #
-    # My innovation.  Make gradients with mag < thresh = "no gradient", because in those
-    # cases, the angle is just noise.
-    psi[mag<gradthresh] = -1.0 # no gradient
-    outfilename = outpath + os.path.splitext(os.path.basename(f))[0] + "-mag" + '{0:03d}'.format(int(gradthresh*100)) + outfile_ext
-    if WRITE_FILES: write_image(mag>=gradthresh, outfilename)
-    outfilename = outpath + os.path.splitext(os.path.basename(f))[0] + "-psi" + '{0:03d}'.format(int(gradthresh*100)) + outfile_ext
-    if WRITE_FILES: write_image(psi, outfilename)
-    #
-    # Generate integral histogram.
-    #histpsi = np.histogram(psi,numbins,(0,180),new=True) # hist of psi for checking results
-    print("Histogram of gradient angles: ")
-    histpsi = np.histogram(psi,numbins,(0,180)) # hist of psi for checking results
-    print(histpsi[0])
-    print("Total gradient pixels: " + str(sum(histpsi[0])) + " out of " + str(imtest.size))
-    int_bins = rub.integral_hist(psi,histpsi[1]) # integral historgram
-    #
-    # Calculate entropy image.
-    print("Calculating entropy...")
-    (H,S) = rub.entropy(int_bins,W)
-    outfilename = outpath + os.path.splitext(os.path.basename(f))[0] + "-H" + str(W)+ outfile_ext
-    if WRITE_FILES: write_image(H, outfilename)
-    print("Histogram of entropy: ")
-    histH = np.histogram(H,8)
-    print(histH[0])
-    print(histH[1])
-    #
-    # Output rubble detections.
-    print("Saving output...")
-    imrbl = np.zeros(imtest.shape,dtype=np.uint8)
-    imrbl[H>histH[1][5]] = 255
-    outfilename = outpath + os.path.splitext(os.path.basename(f))[0] + "-rbl" + str(W)+ '.jpg'
-    params = list() # opencv params for jpeg
-    params.append(cv2.IMWRITE_JPEG_QUALITY)
-    params.append(100) # use 100% for lossless compression
-    cv2.imwrite(outfilename, imrbl,params)
-    # Copy the worldfile from original image.
-    wrld1 = outpath + os.path.splitext(os.path.basename(f))[0] + '.jgw'
-    wrld2 = outpath + os.path.splitext(os.path.basename(f))[0] + "-rbl" + str(W)+ '.jgw'
-    shutil.copyfile(wrld1,wrld2)
-    print("------------------")
-    print("  ")
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
 
 
 
