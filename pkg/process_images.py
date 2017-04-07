@@ -58,11 +58,11 @@ def write_image(im,outfilename) :
 
 def main(argv):
     # runtime options
-    dirpath = '.'
-    imfile_ext = '.jpg'
-    outpath = ''
-    numbins = 9 # number of oriented gradient histogram bins
-    W = 6      # window size for entropy calculation
+    inpath = ''     # default is current dir
+    imfile_ext = '.jpg' # default image type
+    outpath = ''    # default is inpath with "-rubble" appended 
+    numbins = 9      # number of oriented gradient histogram bins
+    W = 6            # window size for entropy calculation
     gradthresh = 0.5 # magnitude of gradient must be greater than this
     WRITE_FILES = False;
 
@@ -70,14 +70,14 @@ def main(argv):
     try:
         opts, args = getopt.getopt(argv,"hi:e:o:")
     except getopt.GetoptError:
-        print usage
+        print(usage)
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
-            print usage
+            print(usage)
             sys.exit()
         elif opt == '-i':
-            dirpath = arg
+            inpath = arg
         elif opt == '-e':
             imfile_ext = arg
             if not imfile_ext[0] == '.':
@@ -85,11 +85,14 @@ def main(argv):
         elif opt == '-o':
             outpath = arg
 
+    if inpath == '':
+        print("Please specify an input directory.", usage)
+        sys.exit(2)
 # Ike test
-#dirpath = 'Data/HurricaneIke/NOAA_Rapid-Response/Test/' 
+#inpath = 'Data/HurricaneIke/NOAA_Rapid-Response/Test/' 
 #imfile_ext = '.JPG'
 # Sandy test, images converted to UTM projection
-#dirpath = 'Data/HurricaneSandy/NOAA_Rapid-Response/Test2/'
+#inpath = 'Data/HurricaneSandy/NOAA_Rapid-Response/Test2/'
 #imfile_ext = '.jpg'
 
 # The image files are .JPG (Note the extension in all upper case.)
@@ -99,20 +102,21 @@ def main(argv):
 # .met -- text file of metadata in Federal Geographic Data Commitee (FGDC) standard format
 # .xml -- text file of metadata in xml formats
 #-------------------------------------------------
-    # Get list of image files in dir and subdirs.
-    dirfilestr = os.path.join(dirpath,'*' + imfile_ext)
-    print "Getting list of image files ", dirfilestr
+    # Get list of image files in input directory.
+    dirfilestr = os.path.join(inpath,'*' + imfile_ext)
+    print("Getting list of image files ", dirfilestr)
     imfilelist = glob.glob(dirfilestr)
     if not len(imfilelist) > 0:
         print("No image files found.") 
         sys.exit(2)
 
+    print("Processing", str(len(imfilelist)), "files")
     # Create output dir.
     if outpath == '':
-        outpath = time.strftime("%Y-%m-%d_%H%M%S") + '_out/'
+        outpath = time.strftime("%Y-%m-%d_%H%M%S") + '_rubble/'
     print("Creating output directory " + outpath)
     os.makedirs(outpath)
-    copy_worldfiles(dirpath,outpath)
+    copy_worldfiles(inpath,outpath)
     #outfile_ext = '.png'
 
     # Process each file.
