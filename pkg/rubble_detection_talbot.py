@@ -10,8 +10,8 @@
  *
 """
 
-# This module is based on the "rubble detection" algorithm in:
-# [Talbot and Talbot, 2013] Talbot, L. M. and Talbot, B. G. (2013). Fast-responder: Rapid mobile-phone 
+# This code is based on the rubble detection algorithm in:
+# Talbot, L. M. and Talbot, B. G. (2013). Fast-responder: Rapid mobile-phone 
 #   access to recent remote sensing imagery for first responders. In Aerospace Conference, 2013 IEEE, 
 #   pages 1-10. IEEE.
 
@@ -33,9 +33,9 @@ def integral_hist(im,bins) :
     numbins = len(bins) -1
     integral_bins = [None]*numbins # integral images for each orientation bin
     for k in range(0, numbins) :
-        # imbin = 0 if im > bins[k+1], else imbin = psi 
+        # threshold function: imbin = 0 if im > bins[k+1], else imbin = im 
         (rval,imbin) = cv2.threshold(im, bins[k+1], 1, cv2.THRESH_TOZERO_INV) 
-        # imbin1 = 1 if im > bins[k], else imbin = 0
+        # threshold function: imbin1 = 1 if im > bins[k], else imbin = 0
         (rval,imbin1) = cv2.threshold(imbin, bins[k], 1, cv2.THRESH_BINARY) 
         integral_bins[k] = cv2.integral(imbin1) 
     #
@@ -52,16 +52,15 @@ def entropy(intbins, W) :
     kmax = len(intbins)   
     hist = np.zeros(kmax)
     Is = np.dstack(intbins)
-    # NOTE:  Decide how to handle borders
+    # TODO:  Decide how to handle borders
     for x in range(halfW,xmax-halfW) :
         for y in range(halfW,ymax-halfW) :
             hist = Is[y-halfW,x-halfW,:] + Is[y+halfW,x+halfW,:] - Is[y-halfW,x+halfW,:] - Is[y+halfW,x-halfW,:]
             s = sum(hist)
             if s > 0 :
                 hist[hist<=0]=np.nan # Adam's suggestion; should never have <0
-                hist = hist/s
-                H[y-1,x-1] = -sum(hist * np.log2(hist))
-                #H[y-1,x-1] = -(1.0/s)*sum(hist * np.log2(hist/s))
+                p = hist/s
+                H[y-1,x-1] = -sum(p * np.log2(p))
             S[y-1,x-1] = s
     H[np.isnan(H)] = 0 # define 0 log 0 as 0
     #
