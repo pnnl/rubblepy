@@ -1,6 +1,6 @@
 # Welcome to rubblepy!
 
-python process_images.py [options]
+   python process_images.py [options]
 
 options:
 
@@ -27,6 +27,7 @@ A sample input file is provided from NOAA's Emergency Response Imagery
 approximately 15 minutes on a desktop PC with a 3 GHz CPU and 16 Gb of RAM.
 
 This code is based on the rubble detection algorithm in:
- Talbot, L. M. and Talbot, B. G. (2013). Fast-responder: Rapid mobile-phone 
-   access to recent remote sensing imagery for first responders. In Aerospace Conference, 2013 IEEE, 
-   pages 1-10. IEEE.
+
+ > Talbot, L. M. and Talbot, B. G. (2013). Fast-responder: Rapid mobile-phone 
+ > access to recent remote sensing imagery for first responders. In Aerospace Conference, 2013 IEEE, 
+ > pages 1-10. IEEE.
