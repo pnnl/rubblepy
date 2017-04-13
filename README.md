@@ -4,11 +4,11 @@
 
 options:
 
--i input_directory       directory containing image files to process, default is '.'
+-i *input_directory*       directory containing image files to process, default is '.'
 
--e image file extension  extension of image files, default is .jpg 
+-e *image file extension*  extension of image files, default is .jpg 
 
--o output directory      directory for output files, default is input dir with "-rubble" appended
+-o *output directory*      directory for output files, default is input dir with "-rubble" appended
 
 
 requires:  openCV
