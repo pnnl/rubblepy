@@ -1,13 +1,13 @@
 Welcome to rubblepy!
 
-
-
 python process_images.py [options]
 
 options:
 -i input_directory       directory containing image files to process, default is '.'
 -e image file extension  extension of image files, default is .jpg 
 -o output directory      directory for output files, default is input dir with "-rubble" appended
+
+requires:  openCV
 
 The script processes all the image files in the input directory and writes the output to
 the output directory.  The output is a binary image file for each input file, where each
