@@ -44,12 +44,18 @@ def rescale(a, oldrange, newrange) :
 def getgray(imfilepath,roi=None) :
     # Load the image.
     # NOTE:  Should get metadata like resolution.
-    im = cv2.imread(imfilepath)
+    im = cv2.imread(imfilepath, -1)
     #
-    # Convert to grayscale.
-    # NOTE:  This is necessary.
-    im = np.float32(im) * (1.0/255.)  # convert to float and scale
-    imgray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY);
+    # Convert to grayscale, if not already.
+    # NOTE:  Scaling is necessary.
+    if im.dtype == 'uint8':
+        im = np.float32(im) * (1.0/255.0)  # convert to float and scale
+    elif im.dtype == 'uint16':
+       im = np.float32(im) * (1.0/65535.0)  # convert to float and scale
+    
+    if len(im.shape) > 1:
+        imgray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY);
+
     if roi is not None :
         imroi = imgray[roi[1]:roi[1]+roi[3],roi[0]:roi[0]+roi[2]]
         imgray = imroi
@@ -144,7 +150,7 @@ def main(argv):
         outfilename = os.path.join(outpath, os.path.splitext(os.path.basename(f))[0] + "-psi" + imfile_ext)
         if WRITE_FILES: write_image(psi, outfilename)
         #
-        # My innovation.  Make gradients with mag < thresh = "no gradient", because in those
+        # Make gradients with mag < thresh = "no gradient", because in those
         # cases, the angle is just noise.
         psi[mag<gradthresh] = -1.0 # no gradient
         outfilename = os.path.join(outpath, os.path.splitext(os.path.basename(f))[0] + "-mag" + '{0:03d}'.format(int(gradthresh*100)) + imfile_ext)
@@ -175,8 +181,16 @@ def main(argv):
         print("  Saving output...")
         imrbl = np.zeros(imtest.shape,dtype=np.uint8)
         imrbl[H>binsH[5]] = 255
+        # rubble detections
         outfilename = os.path.join(outpath, os.path.splitext(os.path.basename(f))[0] + "-rbl" + str(W)+ imfile_ext)
         cv2.imwrite(outfilename, imrbl)
+        # rubble detections overlayed on image
+        imout = cv2.cvtColor(imtest*255, cv2.COLOR_GRAY2BGR);
+        imout[imrbl==255,0] = 0
+        imout[imrbl==255,1] = 0
+        imout[imrbl==255,2] = 255
+        outfilename = os.path.join(outpath, os.path.splitext(os.path.basename(f))[0] + "-test" + imfile_ext)
+        cv2.imwrite(outfilename, imout)
         print("------------------")
         print("  ")
 
