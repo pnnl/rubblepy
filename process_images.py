@@ -51,10 +51,14 @@ def getgray(imfilepath,roi=None) :
     if im.dtype == 'uint8':
         im = np.float32(im) * (1.0/255.0)  # convert to float and scale
     elif im.dtype == 'uint16':
-       im = np.float32(im) * (1.0/65535.0)  # convert to float and scale
+        im = np.float32(im) * (1.0/65535.0)  # convert to float and scale
     
     if len(im.shape) > 1:
         imgray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY);
+    else:
+        imgray = im
+    
+    imgray = rescale(imgray, [np.min(imgray),np.max(imgray)],[0.0,1.0])
 
     if roi is not None :
         imroi = imgray[roi[1]:roi[1]+roi[3],roi[0]:roi[0]+roi[2]]
@@ -137,6 +141,8 @@ def main(argv):
         #roi = [4436, 2000, 800, 800] # [x,y,width,height]
         #imtest = getgray(f,roi)
         imtest = getgray(f)
+        # make sure the image is valid
+
         outfilename = os.path.join(outpath,os.path.splitext(os.path.basename(f))[0] + imfile_ext)
         if WRITE_FILES: write_image(imtest, outfilename)
         #
