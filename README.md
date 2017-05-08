@@ -1,5 +1,6 @@
 # Welcome to rubblepy!
-This code can be used to generate a damage map based on the presence of rubble.  Rubble is often detectable in images with submeter resolution, and can indicate damage to structures from high winds or earthquakes.  The process_images.py script outputs a mask indicating the pixels in the original image where rubble was detected.  The mask can be used in a geospatial software application like ArcMap to generate a damage map based on the rubble density.  The rubble detection mask will contain some false positives which are usually more isolated than true rubble, so a density map will provide a more accurate indication of affected areas than the indivdidual rubble detections will.   
+This code can be used to generate a damage map based on the presence of rubble.  Rubble is often detectable in images with submeter resolution, and can indicate damage to structures from high winds or earthquakes.  The process_images.py script outputs a mask indicating the pixels in the original image where rubble was detected.  The mask can be used in a geospatial software application like ArcMap to generate a damage map based on the rubble density.  The rubble detection mask will contain some false positives which are usually more isolated than true rubble, so a density map will provide a more accurate indication of affected areas than the indivdidual rubble detections will.   An example
+script for generating a density-based damage map is provided in rubbleDense.py
 
 usage:
    python process_images.py [options]
